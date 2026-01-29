@@ -22,10 +22,10 @@ SamplerState linearSampler;
 [bgfx::PASS_IO("INPUT", "OUTPUT")]
 [bgfx::BLOCK_SIZE(16, 16)]
 [shader("compute")]
-[numthreads(8, 8, 1)]
-void Pass1(uint3 tid: SV_DispatchThreadID)
+[numthreads(64, 1, 1)]
+void Pass1(uint3 threadId: SV_DispatchThreadID, uint3 groupId: SV_GroupID)
 {
-    uint2 gxy = (Swizzle8x8((tid.y % 8) * 8 + (tid.x % 8)) << 1) + (tid.xy / 8) * 16;
+    uint2 gxy = (Swizzle8x8(threadId.x) << 1) + groupId.xy * 16;
 
     const uint2 outputSize = GetOutputSize();
     if (gxy.x >= outputSize.x || gxy.y >= outputSize.y)
@@ -34,14 +34,13 @@ void Pass1(uint3 tid: SV_DispatchThreadID)
     }
 
     float2 inputPt = GetInputPt();
+    uint i, j;
 
     float3 src[4][4];
-    $for(ii in Range(0, 2))
-    {
-        $for(jj in Range(0, 2))
-        {
-            uint i = ii * 2;
-            uint j = jj * 2;
+    [unroll]
+    for (i = 0; i <= 2; i += 2) {
+        [unroll]
+        for (j = 0; j <= 2; j += 2) {
             float2 tpos = (gxy + uint2(i, j)) * inputPt;
             const float4 sr = INPUT.GatherRed(linearSampler, tpos);
             const float4 sg = INPUT.GatherGreen(linearSampler, tpos);
@@ -54,15 +53,12 @@ void Pass1(uint3 tid: SV_DispatchThreadID)
         }
     }
 
-    $for(i in Range(0, 2))
-    {
-        $for(j in Range(0, 2))
-        {
+    [unroll]
+    for (i = 0; i <= 1; ++i) {
+        [unroll]
+        for (j = 0; j <= 1; ++j) {
             uint2 destPos = gxy + uint2(i, j);
-            if (destPos.x < outputSize.x && destPos.y < outputSize.y)
-            {
-                OUTPUT[destPos] = float4(ProcessFXAA(src, i + 1, j + 1, INPUT, linearSampler, (destPos + 0.5f) * inputPt, inputPt), 1);
-            }
+            OUTPUT[destPos] = float4(ProcessFXAA(src, i + 1, j + 1, INPUT, linearSampler, (destPos + 0.5f) * inputPt, inputPt), 1);
         }
     }
 }
