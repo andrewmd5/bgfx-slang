@@ -7,21 +7,6 @@ import bgfx;
 #pragma warning(disable: 3557)
 #endif
 
-half4 MulAdd(half3 v, half3x4 m, half4 a)
-{
-    return v.x * half4(m[0][0], m[0][1], m[0][2], m[0][3]) +
-           v.y * half4(m[1][0], m[1][1], m[1][2], m[1][3]) +
-           v.z * half4(m[2][0], m[2][1], m[2][2], m[2][3]) + a;
-}
-
-half4 MulAdd(half4 v, half4x4 m, half4 a)
-{
-    return v.x * half4(m[0][0], m[0][1], m[0][2], m[0][3]) +
-           v.y * half4(m[1][0], m[1][1], m[1][2], m[1][3]) +
-           v.z * half4(m[2][0], m[2][1], m[2][2], m[2][3]) +
-           v.w * half4(m[3][0], m[3][1], m[3][2], m[3][3]) + a;
-}
-
 Texture2D INPUT;
 
 [bgfx::SIZE("INPUT_WIDTH * 2", "INPUT_HEIGHT * 2")]

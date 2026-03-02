@@ -51,6 +51,10 @@
 #define NIS_TEXTURE_GATHER 0
 #endif
 
+#ifndef NIS_NV12_SUPPORT
+#define NIS_NV12_SUPPORT 0
+#endif
+
 #ifndef NIS_CLAMP_OUTPUT
 #define NIS_CLAMP_OUTPUT 0
 #endif
@@ -463,8 +467,12 @@ void NVScaler(uint2 blockIdx, uint threadIdx,
             {
                 $for(k in Range(0, 2))
                 {
+#if NIS_NV12_SUPPORT
+                    p[j][k] = in_texture_y.SampleLevel(samplerLinearClamp, float2(tx + k * kSrcNormX, ty + j * kSrcNormY), 0);
+#else
                     const float4 px_val = in_texture.SampleLevel(samplerLinearClamp, float2(tx + k * kSrcNormX, ty + j * kSrcNormY), 0);
                     p[j][k] = getY(px_val.xyz);
+#endif
                 }
             }
 #endif
@@ -578,8 +586,14 @@ void NVScaler(uint2 blockIdx, uint threadIdx,
             float2 dstCoord = float2(dstX, dstY);
 #endif
 
+#if NIS_NV12_SUPPORT
+            float y_nv12 = in_texture_y.SampleLevel(samplerLinearClamp, coord, 0);
+            float2 uv_nv12 = in_texture_uv.SampleLevel(samplerLinearClamp, coord, 0);
+            float4 op = float4(YUVtoRGB(float3(y_nv12, uv_nv12)), 1.0f);
+#else
             float4 op = in_texture.SampleLevel(samplerLinearClamp, coord, 0);
             float y = getY(float3(op.x, op.y, op.z));
+#endif
 
 #if NIS_HDR_MODE == NIS_HDR_MODE_LINEAR
             const float kEps_hdr = 1e-4f;
@@ -714,8 +728,12 @@ void NVSharpen(uint2 blockIdx, uint threadIdx,
                 const float tx = (dstBlockX + pos.x + dx + kShift) * kSrcNormX;
                 const float ty = (dstBlockY + pos.y + dy + kShift) * kSrcNormY;
 #endif
+#if NIS_NV12_SUPPORT
+                shPixelsY[pos.y + dy][pos.x + dx] = in_texture_y.SampleLevel(samplerLinearClamp, float2(tx, ty), 0);
+#else
                 const float4 px_val = in_texture.SampleLevel(samplerLinearClamp, float2(tx, ty), 0);
                 shPixelsY[pos.y + dy][pos.x + dx] = getY(px_val.xyz);
+#endif
             }
         }
     }
@@ -753,7 +771,13 @@ void NVSharpen(uint2 blockIdx, uint threadIdx,
         float2 dstCoord = float2(dstX, dstY);
 #endif
         {
+#if NIS_NV12_SUPPORT
+            float y_nv12 = in_texture_y.SampleLevel(samplerLinearClamp, coord, 0);
+            float2 uv_nv12 = in_texture_uv.SampleLevel(samplerLinearClamp, coord, 0);
+            float4 op = float4(YUVtoRGB(float3(y_nv12, uv_nv12)), 1.0f);
+#else
             float4 op = in_texture.SampleLevel(samplerLinearClamp, coord, 0);
+#endif
 
 #if NIS_HDR_MODE == NIS_HDR_MODE_LINEAR
             const float kEps_hdr = 1e-4f * kHDRCompressionFactor * kHDRCompressionFactor;

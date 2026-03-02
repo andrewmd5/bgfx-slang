@@ -88,8 +88,6 @@ void Pass1(uint3 tid: SV_DispatchThreadID)
             const uint2 destPos = gxy + uint2(i, j);
             if (destPos.x < outputSize.x && destPos.y < outputSize.y)
             {
-                float2 pos = (destPos + 0.5f) * inputPt;
-
                 float3 blur = (2 * (src[i + 3][j + 2].rgb + src[i + 2][j + 3].rgb + src[i + 4][j + 3].rgb + src[i + 3][j + 4].rgb) +
                                (src[i + 2][j + 2].rgb + src[i + 4][j + 2].rgb + src[i + 2][j + 4].rgb + src[i + 4][j + 4].rgb) +
                                4 * src[i + 3][j + 3].rgb) /

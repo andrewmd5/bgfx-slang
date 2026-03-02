@@ -65,7 +65,7 @@ static const float kSharpEndY = 0.9f;
 static const float kSharpScaleY = 1.0f / (kSharpEndY - kSharpStartY);
 
 #define NIS_BLOCK_WIDTH 32
-#define NIS_BLOCK_HEIGHT 32
+#define NIS_BLOCK_HEIGHT 24
 #define NIS_THREAD_GROUP_SIZE 256
 
 #include "NIS_Scaler.h"
@@ -76,7 +76,7 @@ static const float kSharpScaleY = 1.0f / (kSharpEndY - kSharpStartY);
 [bgfx::FP16]
 [bgfx::PASS(1, "NIS Upscale")]
 [bgfx::PASS_IO("INPUT, coef_scaler, coef_usm", "OUTPUT")]
-[bgfx::BLOCK_SIZE(32, 32)]
+[bgfx::BLOCK_SIZE(32, 24)]
 [shader("compute")]
 [numthreads(256, 1, 1)]
 void Pass1(uint3 tid: SV_DispatchThreadID, uint3 gid: SV_GroupID, uint3 gtid: SV_GroupThreadID)

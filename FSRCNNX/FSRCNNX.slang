@@ -3,6 +3,12 @@
 
 import bgfx;
 
+[bgfx::SAMPLER(FilterMode.POINT, AddressMode.CLAMP)]
+SamplerState sam;
+
+[bgfx::SAMPLER(FilterMode.LINEAR, AddressMode.CLAMP)]
+SamplerState sam1;
+
 Texture2D INPUT;
 
 [bgfx::SIZE("INPUT_WIDTH * 2", "INPUT_HEIGHT * 2")]
@@ -56,12 +62,6 @@ Texture2D tex4;
 [bgfx::SIZE("INPUT_WIDTH", "INPUT_HEIGHT")]
 [format("rgba16f")]
 RWTexture2D<float4> tex4_UAV;
-
-[bgfx::SAMPLER(FilterMode.POINT, AddressMode.CLAMP)]
-SamplerState sam;
-
-[bgfx::SAMPLER(FilterMode.LINEAR, AddressMode.CLAMP)]
-SamplerState sam1;
 
 static const half2x3 rgb2uv = {
     -0.169h, -0.331h, 0.5h,

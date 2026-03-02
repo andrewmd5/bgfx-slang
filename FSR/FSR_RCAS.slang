@@ -47,39 +47,39 @@ void FsrRcasHx2(
     half2 hG = half2(h0.g, h1.g);
     half2 hB = half2(h0.b, h1.b);
 
-    half2 bL = bB * 0.5 + (bR * 0.5 + bG);
-    half2 dL = dB * 0.5 + (dR * 0.5 + dG);
-    half2 eL = eB * 0.5 + (eR * 0.5 + eG);
-    half2 fL = fB * 0.5 + (fR * 0.5 + fG);
-    half2 hL = hB * 0.5 + (hR * 0.5 + hG);
+    half2 bL = bB * half(0.5) + (bR * half(0.5) + bG);
+    half2 dL = dB * half(0.5) + (dR * half(0.5) + dG);
+    half2 eL = eB * half(0.5) + (eR * half(0.5) + eG);
+    half2 fL = fB * half(0.5) + (fR * half(0.5) + fG);
+    half2 hL = hB * half(0.5) + (hR * half(0.5) + hG);
 
-    half2 nz = 0.25 * bL + 0.25 * dL + 0.25 * fL + 0.25 * hL - eL;
+    half2 nz = half(0.25) * bL + half(0.25) * dL + half(0.25) * fL + half(0.25) * hL - eL;
     nz = saturate(abs(nz) * rcp(max3(max3(bL, dL, eL), fL, hL) - min3(min3(bL, dL, eL), fL, hL)));
-    nz = -0.5 * nz + 1.0;
+    nz = half(-0.5) * nz + half(1.0);
 
     half2 mn4R = min(min3(bR, dR, fR), hR);
     half2 mn4G = min(min3(bG, dG, fG), hG);
     half2 mn4B = min(min3(bB, dB, fB), hB);
-    half2 mx4R = max(min3(bR, dR, fR), hR);
-    half2 mx4G = max(min3(bG, dG, fG), hG);
-    half2 mx4B = max(min3(bB, dB, fB), hB);
+    half2 mx4R = max(max3(bR, dR, fR), hR);
+    half2 mx4G = max(max3(bG, dG, fG), hG);
+    half2 mx4B = max(max3(bB, dB, fB), hB);
 
     half2 peakC = half2(1.0, -1.0 * 4.0);
 
-    half2 hitMinR = min(mn4R, eR) * rcp(4.0 * mx4R);
-    half2 hitMinG = min(mn4G, eG) * rcp(4.0 * mx4G);
-    half2 hitMinB = min(mn4B, eB) * rcp(4.0 * mx4B);
-    half2 hitMaxR = (peakC.x - max(mx4R, eR)) * rcp(4.0 * mn4R + peakC.y);
-    half2 hitMaxG = (peakC.x - max(mx4G, eG)) * rcp(4.0 * mn4G + peakC.y);
-    half2 hitMaxB = (peakC.x - max(mx4B, eB)) * rcp(4.0 * mn4B + peakC.y);
+    half2 hitMinR = min(mn4R, eR) * rcp(half(4.0) * mx4R);
+    half2 hitMinG = min(mn4G, eG) * rcp(half(4.0) * mx4G);
+    half2 hitMinB = min(mn4B, eB) * rcp(half(4.0) * mx4B);
+    half2 hitMaxR = (peakC.x - max(mx4R, eR)) * rcp(half(4.0) * mn4R + peakC.y);
+    half2 hitMaxG = (peakC.x - max(mx4G, eG)) * rcp(half(4.0) * mn4G + peakC.y);
+    half2 hitMaxB = (peakC.x - max(mx4B, eB)) * rcp(half(4.0) * mn4B + peakC.y);
     half2 lobeR = max(-hitMinR, hitMaxR);
     half2 lobeG = max(-hitMinG, hitMaxG);
     half2 lobeB = max(-hitMinB, hitMaxB);
-    half2 lobe = max(-FSR_RCAS_LIMIT, min(max3(lobeR, lobeG, lobeB), 0.0)) * s;
+    half2 lobe = max(half(-FSR_RCAS_LIMIT), min(max3(lobeR, lobeG, lobeB), half(0.0))) * s;
 
     lobe *= nz;
 
-    half2 rcpL = rcp(4.0 * lobe + 1.0);
+    half2 rcpL = rcp(half(4.0) * lobe + half(1.0));
     pixR = (lobe * bR + lobe * dR + lobe * hR + lobe * fR + eR) * rcpL;
     pixG = (lobe * bG + lobe * dG + lobe * hG + lobe * fG + eG) * rcpL;
     pixB = (lobe * bB + lobe * dB + lobe * hB + lobe * fB + eB) * rcpL;
@@ -199,22 +199,25 @@ void Pass1(uint3 tid: SV_DispatchThreadID)
 #else
     OUTPUT[gxy] = float4(FsrRcasF(src[1][0], src[0][1], src[1][1], src[2][1], src[1][2]), 1);
 
-    ++gxy.x;
-    if (gxy.x < outputSize.x && gxy.y < outputSize.y)
+    uint2 gxy1 = gxy + uint2(1u, 0u);
+    if (gxy1.x < outputSize.x)
+    if (gxy1.y < outputSize.y)
     {
-        OUTPUT[gxy] = float4(FsrRcasF(src[2][0], src[1][1], src[2][1], src[3][1], src[2][2]), 1);
+        OUTPUT[gxy1] = float4(FsrRcasF(src[2][0], src[1][1], src[2][1], src[3][1], src[2][2]), 1);
     }
 
-    ++gxy.y;
-    if (gxy.x < outputSize.x && gxy.y < outputSize.y)
+    uint2 gxy2 = gxy + uint2(1u, 1u);
+    if (gxy2.x < outputSize.x)
+    if (gxy2.y < outputSize.y)
     {
-        OUTPUT[gxy] = float4(FsrRcasF(src[2][1], src[1][2], src[2][2], src[3][2], src[2][3]), 1);
+        OUTPUT[gxy2] = float4(FsrRcasF(src[2][1], src[1][2], src[2][2], src[3][2], src[2][3]), 1);
     }
 
-    --gxy.x;
-    if (gxy.x < outputSize.x && gxy.y < outputSize.y)
+    uint2 gxy3 = gxy + uint2(0u, 1u);
+    if (gxy3.x < outputSize.x)
+    if (gxy3.y < outputSize.y)
     {
-        OUTPUT[gxy] = float4(FsrRcasF(src[1][1], src[0][2], src[1][2], src[2][2], src[1][3]), 1);
+        OUTPUT[gxy3] = float4(FsrRcasF(src[1][1], src[0][2], src[1][2], src[2][2], src[1][3]), 1);
     }
 #endif
 }

@@ -139,7 +139,7 @@ void Pass1(uint3 tid: SV_DispatchThreadID)
     float3 outputColor = weightedAccumulate(weightMatrix[0], float4x3(pixels[0][0], pixels[1][0], pixels[2][0], pixels[3][0]), float3(0, 0, 0));
     outputColor = weightedAccumulate(weightMatrix[1], float4x3(pixels[0][1], pixels[1][1], pixels[2][1], pixels[3][1]), outputColor);
     outputColor = weightedAccumulate(weightMatrix[2], float4x3(pixels[0][2], pixels[1][2], pixels[2][2], pixels[3][2]), outputColor);
-    outputColor = weightedAccumulate(weightMatrix[3], float4x3(pixels[0][3], pixels[2][3], pixels[2][3], pixels[3][3]), outputColor);
+    outputColor = weightedAccumulate(weightMatrix[3], float4x3(pixels[0][3], pixels[1][3], pixels[2][3], pixels[3][3]), outputColor);
 
     outputColor *= rcp(dot(mul(weightMatrix, float4(1, 1, 1, 1)), 1));
 

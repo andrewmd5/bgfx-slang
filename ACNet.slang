@@ -112,8 +112,6 @@ void Pass1(uint3 tid: SV_DispatchThreadID)
     }
     float2 inputPt = GetInputPt();
 
-    uint i, j;
-
     half src[4][4];
     $for(i__i in Range(0, 2))
     {

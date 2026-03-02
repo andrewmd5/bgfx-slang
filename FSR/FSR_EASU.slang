@@ -16,12 +16,6 @@ SamplerState sam;
 
 #ifdef BG_FP16
 
-half2 MF2_x(half a)
-{
-    return half2(a, a);
-}
-#define MF2_(a) MF2_x(half(a))
-
 void FsrEasuTapH(
     inout half2 aCR,
     inout half2 aCG,
@@ -45,13 +39,13 @@ void FsrEasuTapH(
     vY *= len.y;
 
     half2 d2 = vX * vX + vY * vY;
-    d2 = min(d2, MF2_(clp));
+    d2 = min(d2, clp);
 
-    half2 wB = MF2_(2.0 / 5.0) * d2 + MF2_(-1.0);
-    half2 wA = MF2_(lob) * d2 + MF2_(-1.0);
+    half2 wB = half(2.0 / 5.0) * d2 - half(1.0);
+    half2 wA = lob * d2 - half(1.0);
     wB *= wB;
     wA *= wA;
-    wB = MF2_(25.0 / 16.0) * wB + MF2_(-(25.0 / 16.0 - 1.0));
+    wB = half(25.0 / 16.0) * wB - half(25.0 / 16.0 - 1.0);
     half2 w = wB * wA;
 
     aCR += cR * w;
@@ -73,7 +67,7 @@ void FsrEasuSetH(
     half2 lD,
     half2 lE)
 {
-    half2 w = MF2_(0.0);
+    half2 w = half2(0, 0);
     if (biST)
         w = (half2(1.0, 0.0) + half2(-pp.x, pp.x)) * half(half(1.0) - pp.y);
     if (biUV)
@@ -117,18 +111,18 @@ half3 FsrEasu(
     float2 p2 = p0 + con2.zw;
     float2 p3 = p0 + con3.xy;
 
-    half4 bczzR = INPUT.GatherRed(sam, p0);
-    half4 bczzG = INPUT.GatherGreen(sam, p0);
-    half4 bczzB = INPUT.GatherBlue(sam, p0);
-    half4 ijfeR = INPUT.GatherRed(sam, p1);
-    half4 ijfeG = INPUT.GatherGreen(sam, p1);
-    half4 ijfeB = INPUT.GatherBlue(sam, p1);
-    half4 klhgR = INPUT.GatherRed(sam, p2);
-    half4 klhgG = INPUT.GatherGreen(sam, p2);
-    half4 klhgB = INPUT.GatherBlue(sam, p2);
-    half4 zzonR = INPUT.GatherRed(sam, p3);
-    half4 zzonG = INPUT.GatherGreen(sam, p3);
-    half4 zzonB = INPUT.GatherBlue(sam, p3);
+    half4 bczzR = (half4)INPUT.GatherRed(sam, p0);
+    half4 bczzG = (half4)INPUT.GatherGreen(sam, p0);
+    half4 bczzB = (half4)INPUT.GatherBlue(sam, p0);
+    half4 ijfeR = (half4)INPUT.GatherRed(sam, p1);
+    half4 ijfeG = (half4)INPUT.GatherGreen(sam, p1);
+    half4 ijfeB = (half4)INPUT.GatherBlue(sam, p1);
+    half4 klhgR = (half4)INPUT.GatherRed(sam, p2);
+    half4 klhgG = (half4)INPUT.GatherGreen(sam, p2);
+    half4 klhgB = (half4)INPUT.GatherBlue(sam, p2);
+    half4 zzonR = (half4)INPUT.GatherRed(sam, p3);
+    half4 zzonG = (half4)INPUT.GatherGreen(sam, p3);
+    half4 zzonB = (half4)INPUT.GatherBlue(sam, p3);
 
     half4 bczzL = bczzB * half(0.5) + (bczzR * half(0.5) + bczzG);
     half4 ijfeL = ijfeB * half(0.5) + (ijfeR * half(0.5) + ijfeG);
@@ -148,9 +142,9 @@ half3 FsrEasu(
     half oL = zzonL.z;
     half nL = zzonL.w;
 
-    half2 dirPX = MF2_(0.0);
-    half2 dirPY = MF2_(0.0);
-    half2 lenP = MF2_(0.0);
+    half2 dirPX = half2(0, 0);
+    half2 dirPY = half2(0, 0);
+    half2 lenP = half2(0, 0);
     FsrEasuSetH(dirPX, dirPY, lenP, ppp, true, false, half2(bL, cL), half2(eL, fL), half2(fL, gL), half2(gL, hL), half2(jL, kL));
     FsrEasuSetH(dirPX, dirPY, lenP, ppp, false, true, half2(fL, gL), half2(iL, jL), half2(jL, kL), half2(kL, lL), half2(nL, oL));
     half2 dir = half2(dirPX.r + dirPX.g, dirPY.r + dirPY.g);
@@ -162,7 +156,7 @@ half3 FsrEasu(
     dirR = rsqrt(dirR);
     dirR = zro ? half(1.0) : dirR;
     dir.x = zro ? half(1.0) : dir.x;
-    dir *= MF2_(dirR);
+    dir *= dirR;
 
     len = len * half(0.5);
     len *= len;
@@ -175,10 +169,10 @@ half3 FsrEasu(
     half2 bothG = max(max(half2(-ijfeG.z, ijfeG.z), half2(-klhgG.w, klhgG.w)), max(half2(-ijfeG.y, ijfeG.y), half2(-klhgG.x, klhgG.x)));
     half2 bothB = max(max(half2(-ijfeB.z, ijfeB.z), half2(-klhgB.w, klhgB.w)), max(half2(-ijfeB.y, ijfeB.y), half2(-klhgB.x, klhgB.x)));
 
-    half2 pR = MF2_(0.0);
-    half2 pG = MF2_(0.0);
-    half2 pB = MF2_(0.0);
-    half2 pW = MF2_(0.0);
+    half2 pR = half2(0, 0);
+    half2 pG = half2(0, 0);
+    half2 pB = half2(0, 0);
+    half2 pW = half2(0, 0);
     FsrEasuTapH(pR, pG, pB, pW, half2(0.0, 1.0) - ppp.xx, half2(-1.0, -1.0) - ppp.yy, dir, len2, lob, clp, bczzR.xy, bczzG.xy, bczzB.xy);
     FsrEasuTapH(pR, pG, pB, pW, half2(-1.0, 0.0) - ppp.xx, half2(1.0, 1.0) - ppp.yy, dir, len2, lob, clp, ijfeR.xy, ijfeG.xy, ijfeB.xy);
     FsrEasuTapH(pR, pG, pB, pW, half2(0.0, -1.0) - ppp.xx, half2(0.0, 0.0) - ppp.yy, dir, len2, lob, clp, ijfeR.zw, ijfeG.zw, ijfeB.zw);
@@ -372,7 +366,7 @@ float3 FsrEasu(uint2 ip, float4 con0, float4 con1, float4 con2, float2 con3)
 [numthreads(8, 8, 1)]
 void Pass1(uint3 tid: SV_DispatchThreadID)
 {
-    uint2 gxy = Swizzle8x8((tid.y % 8) * 8 + (tid.x % 8)) + (tid.xy / 8) * 8;
+    uint2 gxy = Swizzle8x8((tid.y % 8) * 8 + (tid.x % 8)) + (tid.xy / 8) * 16;
 
     const uint2 outputSize = GetOutputSize();
     if (gxy.x >= outputSize.x || gxy.y >= outputSize.y)
@@ -426,22 +420,25 @@ void Pass1(uint3 tid: SV_DispatchThreadID)
 #else
     OUTPUT[gxy] = float4(FsrEasu(gxy, con0, con1, con2, con3), 1);
 
-    gxy.x += 8u;
-    if (gxy.x < outputSize.x && gxy.y < outputSize.y)
+    uint2 gxy1 = gxy + uint2(8u, 0u);
+    if (gxy1.x < outputSize.x)
+    if (gxy1.y < outputSize.y)
     {
-        OUTPUT[gxy] = float4(FsrEasu(gxy, con0, con1, con2, con3), 1);
+        OUTPUT[gxy1] = float4(FsrEasu(gxy1, con0, con1, con2, con3), 1);
     }
 
-    gxy.y += 8u;
-    if (gxy.x < outputSize.x && gxy.y < outputSize.y)
+    uint2 gxy2 = gxy + uint2(8u, 8u);
+    if (gxy2.x < outputSize.x)
+    if (gxy2.y < outputSize.y)
     {
-        OUTPUT[gxy] = float4(FsrEasu(gxy, con0, con1, con2, con3), 1);
+        OUTPUT[gxy2] = float4(FsrEasu(gxy2, con0, con1, con2, con3), 1);
     }
 
-    gxy.x -= 8u;
-    if (gxy.x < outputSize.x && gxy.y < outputSize.y)
+    uint2 gxy3 = gxy + uint2(0u, 8u);
+    if (gxy3.x < outputSize.x)
+    if (gxy3.y < outputSize.y)
     {
-        OUTPUT[gxy] = float4(FsrEasu(gxy, con0, con1, con2, con3), 1);
+        OUTPUT[gxy3] = float4(FsrEasu(gxy3, con0, con1, con2, con3), 1);
     }
 #endif
 }

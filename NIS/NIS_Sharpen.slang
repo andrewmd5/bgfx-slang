@@ -294,7 +294,7 @@ void Pass1(uint3 tid: SV_DispatchThreadID)
             op.x += usmY;
             op.y += usmY;
             op.z += usmY;
-            OUTPUT[int2(dstCoord)] = saturate(op);
+            OUTPUT[int2(dstCoord)] = float4(saturate(op).xyz, 1.0);
         }
     }
 }

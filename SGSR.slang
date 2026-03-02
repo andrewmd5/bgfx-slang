@@ -90,9 +90,6 @@ float3 SgsrProcess(float2 uv, float4 viewportInfo)
 
     pix = SampleRGBA(uv).xyz;
 
-    float xCenter = abs(uv.x - 0.5);
-    float yCenter = abs(uv.y - 0.5);
-
     float2 imgCoord = ((uv.xy * viewportInfo.zw) + float2(-0.5, 0.5));
     float2 imgCoordPixel = floor(imgCoord);
     float2 coord = (imgCoordPixel * viewportInfo.xy);
